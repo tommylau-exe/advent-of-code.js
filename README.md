@@ -1,6 +1,6 @@
 # advent-of-code.js
 
-This project is structured as a set of standalone node.js scripts. All scripts assume that the
+This project is structured as a set of standalone Node/Deno scripts. All scripts assume that the
 puzzle input is provided via stdin.
 
 ## Example usage
