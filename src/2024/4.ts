@@ -9,24 +9,27 @@ while (Deno.stdin.readSync(buffer)) {
 }
 
 const crossword = input.split("\n").slice(0, -1);
-function* word([x, y]: [number, number], [dx, dy]: [number, number]) {
-    while (crossword[y] && crossword[y][x]) {
-        yield crossword[y][x];
-        x += dx;
-        y += dy;
-    }
+function letter([x, y]: [number, number]): string | undefined {
+    return crossword[y] && crossword[y][x];
 }
 
 let occurrences = 0;
 for (let y = 0; y < crossword.length; y++) {
     for (let x = 0; x < crossword[y].length; x++) {
-        for (
-            const dir of [[1, 0], [1, 1], [0, 1], [-1, 1]] as [number, number][]
+        if (letter([x, y]) != "A") {
+            continue;
+        }
+
+        const ne = letter([x + 1, y - 1]);
+        const nw = letter([x - 1, y - 1]);
+        const se = letter([x + 1, y + 1]);
+        const sw = letter([x - 1, y + 1]);
+
+        if (
+            [ne, nw, se, sw].every((c) => c == "M" || c == "S") && ne != sw &&
+            nw != se
         ) {
-            const w = [...word([x, y], dir).take(4)].join("");
-            if (w == "XMAS" || w == "SAMX") {
-                occurrences++;
-            }
+            occurrences++;
         }
     }
 }
