@@ -24,20 +24,34 @@ for (const rule of rulesSection) {
 }
 
 let pageSum = 0;
-updates: for (const update of updatesSection) {
+for (const update of updatesSection) {
     const pages = update.split(",").map(Number);
+    let reordered = false;
     for (let i = 0; i < pages.length; i++) {
-        if (!rules.has(pages[i])) {
+        const page = pages[i];
+        if (!rules.has(page)) {
             continue;
         }
 
-        const prevNums = new Set(pages.slice(0, i));
-        if (rules.get(pages[i])!.intersection(prevNums).size > 0) {
-            continue updates;
+        // while there are pages that should've been after page j, swap it with
+        // the element before it
+        let j = i;
+        while (
+            rules.get(page)!.intersection(new Set(pages.slice(0, j))).size > 0
+        ) {
+            reordered = true;
+
+            const tmp = pages[j - 1];
+            pages[j - 1] = pages[j];
+            pages[j] = tmp;
+
+            j--;
         }
     }
 
-    pageSum += pages[Math.floor(pages.length / 2)];
+    if (reordered) {
+        pageSum += pages[Math.floor(pages.length / 2)];
+    }
 }
 
 console.log(pageSum);
