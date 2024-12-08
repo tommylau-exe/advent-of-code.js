@@ -10,10 +10,10 @@ while (Deno.stdin.readSync(buffer)) {
 
 const map = input.split("\n").slice(0, -1);
 
-let x = 0, y = 0;
-findStart: for (; y < map.length; y++) {
-    for (x = 0; x < map[y].length; x++) {
-        if (map[y][x] == "^") {
+let sx = 0, sy = 0;
+findStart: for (; sy < map.length; sy++) {
+    for (sx = 0; sx < map[sy].length; sx++) {
+        if (map[sy][sx] == "^") {
             break findStart;
         }
     }
@@ -28,17 +28,40 @@ function turn(dx: number, dy: number): [number, number] {
     return [dy * -1, dx];
 }
 
-let dx = 0, dy = -1;
-const visited = new Set<number>(); // set of 1D indices into map in row-major order
-while (map[y] && map[y][x]) {
-    visited.add(map[y].length * y + x);
+let positions = 0;
+for (let oy = 0; oy < map.length; oy++) {
+    for (let ox = 0; ox < map[oy].length; ox++) {
+        let x = sx, y = sy;
+        let dx = 0, dy = -1;
 
-    if (obstacle(x + dx, y + dy)) {
-        [dx, dy] = turn(dx, dy);
+        // for each position, the last direction we were travelling
+        // NOTE: JS doesn't support value equality, so although I'd like to
+        // represent this as a Map, we'll have to settle for representing 2D
+        // points as 1D row-major indices
+        const directions = new Array<[number, number] | undefined>(
+            map.length * map[0].length,
+        );
+
+        // simulate guard's path
+        while (map[y] && map[y][x]) {
+            // may need to turn multiple times
+            while (obstacle(x + dx, y + dy) || x + dx == ox && y + dy == oy) {
+                [dx, dy] = turn(dx, dy);
+            }
+
+            const dirIndex = map[y].length * y + x;
+            const prevDir = directions[dirIndex];
+            if (prevDir && prevDir[0] == dx && prevDir[1] == dy) {
+                // cycle detected, walking in same direction on same spot
+                positions++;
+                break;
+            }
+
+            directions[dirIndex] = [dx, dy];
+            x += dx;
+            y += dy;
+        }
     }
-
-    x += dx;
-    y += dy;
 }
 
-console.log(visited.size);
+console.log(positions);
