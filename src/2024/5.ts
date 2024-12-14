@@ -1,13 +1,8 @@
 #!/usr/bin/env -S deno run
 
-// parse stdin as utf-8 text
-const decoder = new TextDecoder();
-const buffer = new Uint8Array(2 ** 16); // 64KiB
-let input = "";
-while (Deno.stdin.readSync(buffer)) {
-    input += decoder.decode(buffer);
-}
+import fs from "node:fs";
 
+const input = fs.readFileSync(0, { encoding: "utf8" });
 const lines = input.split("\n").slice(0, -1);
 const separator = lines.findIndex((line) => line == "");
 const rulesSection = lines.slice(0, separator);
