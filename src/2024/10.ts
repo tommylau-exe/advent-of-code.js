@@ -17,53 +17,32 @@ function* neighbors(x: number, y: number) {
     }
 }
 
-const trailheads = new Array<[number, number]>();
+const positions = new Array<[number, number]>();
 for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map[y].length; x++) {
         if (map[y][x] == 0) {
-            trailheads.push([x, y]);
+            positions.push([x, y]);
         }
     }
 }
 
-class TrailPointSet {
-    #points: Set<number>;
+let ratings = 0;
+while (positions.length > 0) {
+    const [x, y] = positions.pop()!;
+    const e = map[y][x];
 
-    constructor() {
-        this.#points = new Set<number>();
+    if (e == 9) {
+        ratings++;
+        continue;
     }
 
-    add(x: number, y: number): boolean {
-        return this.#points.size !=
-            this.#points.add(y * map[x].length + x).size;
+    for (const { elevation: ne, x: nx, y: ny } of neighbors(x, y)) {
+        if (ne != e + 1) {
+            continue; // elevation must increase by exactly 1
+        }
+
+        positions.push([nx, ny]);
     }
 }
 
-let scores = 0;
-for (const [x, y] of trailheads) {
-    const position = new Array<[number, number]>([x, y]);
-    const endpoints = new TrailPointSet();
-    while (position.length > 0) {
-        const [x, y] = position.pop()!;
-        const e = map[y][x];
-
-        if (e == 9) {
-            if (endpoints.add(x, y)) {
-                // don't add duplicate endpoints to score
-                scores++;
-            }
-
-            continue;
-        }
-
-        for (const { elevation: ne, x: nx, y: ny } of neighbors(x, y)) {
-            if (ne != e + 1) {
-                continue; // elevation must increase by exactly 1
-            }
-
-            position.push([nx, ny]);
-        }
-    }
-}
-
-console.log(scores);
+console.log(ratings);
