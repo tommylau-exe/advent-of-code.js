@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run
 
 import fs from "node:fs";
+import process from "node:process";
 
 const input = fs.readFileSync(0, { encoding: "utf8" });
 
@@ -20,27 +21,30 @@ function mod(x: number, y: number): number {
     return ((x % y) + y) % y;
 }
 
-for (let i = 0; i < 100; i++) {
+const map = new Array<boolean>(width * height);
+for (let iter = 1; iter < 10_000; iter++) {
+    // simulation
+    map.fill(false);
     for (const robot of robots) {
         robot.x = mod(robot.x + robot.vx, width);
         robot.y = mod(robot.y + robot.vy, height);
-    }
-}
 
-const quads = [0, 0, 0, 0];
-for (const robot of robots) {
-    if (robot.x < width / 2 - 1 && robot.y < height / 2 - 1) {
-        quads[0]++;
+        map[robot.y * width + robot.x] = true;
     }
-    if (robot.x > width / 2 && robot.y < height / 2 - 1) {
-        quads[1]++;
-    }
-    if (robot.x < width / 2 - 1 && robot.y > height / 2) {
-        quads[2]++;
-    }
-    if (robot.x > width / 2 && robot.y > height / 2) {
-        quads[3]++;
-    }
-}
 
-console.log(quads.reduce((prod, n) => prod * n));
+    // just check for a bunch of X I suppose
+    if (!map.map((r) => r && "X" || ".").join("").includes("XXXXXXXXX")) {
+        continue;
+    }
+
+    // draw to console
+    process.stdout.write(`${iter}\n`);
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            process.stdout.write(map[y * width + x] && "X" || ".");
+        }
+        process.stdout.write("\n");
+    }
+
+    break;
+}
